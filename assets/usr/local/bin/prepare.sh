@@ -10,10 +10,6 @@ apt-get --yes install \
     gawk \
     texinfo \
     wget
-#apt-get --yes install \
-#    libgmp10 \
-#    libmpc3 \
-#    libmpfr4
 
 rm -rf \
     /tmp/* \

@@ -26,7 +26,7 @@ build:
 		--tag $(IMAGE):$(shell cat VERSION) \
 		--rm .
 	docker tag $(IMAGE):$(shell cat VERSION) $(IMAGE):latest
-	docker rmi --force $$(docker images | grep "<none>" | awk '{print $$3}')
+	docker rmi --force $$(docker images | grep "<none>" | awk '{print $$3}') > /dev/null 2>&1 ||:
 
 create:
 	docker stop $(IMAGE) > /dev/null 2>&1 ||:

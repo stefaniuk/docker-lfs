@@ -4,9 +4,8 @@ FROM stefaniuk/ubuntu:16.04-20170320
 
 ARG APT_PROXY
 ARG APT_PROXY_SSL
+ARG PROC=4
 
-ARG LFS_TEST=1
-ARG PROC=1
 ENV LFS=/mnt/lfs
 
 # 2.2
@@ -46,7 +45,7 @@ ENV \
     LC_ALL=POSIX \
     LFS_TGT=x86_64-lfs-linux-gnu \
     PATH=/tools/bin:/bin:/usr/bin \
-    MAKEFLAGS="-j 2"
+    MAKEFLAGS="-j $PROC"
 
 # 5.4 Binutils - Pass 1
 RUN set -x && \
@@ -236,7 +235,6 @@ RUN set -x && \
     cd unix && \
     ./configure --prefix=/tools && \
     make && \
-    TZ=UTC make test && \
     make install && \
     chmod -v u+w /tools/lib/libtcl8.6.so && \
     make install-private-headers && \
@@ -244,11 +242,295 @@ RUN set -x && \
     popd && \
     rm -rf /tmp/tcl*
 
+# 5.12 Expect
+RUN set -x && \
+    tar -xf $(ls -1 expect*.tar.gz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'expect*') && \
+    cp -v configure{,.orig} && \
+    sed 's:/usr/local/bin:/bin:' configure.orig > configure && \
+    ./configure \
+        --prefix=/tools \
+        --with-tcl=/tools/lib \
+        --with-tclinclude=/tools/include && \
+    make && \
+    make SCRIPTS="" install && \
+    popd && \
+    rm -rf /tmp/expect*
+
+# 5.13 DejaGNU
+RUN set -x && \
+    tar -xf $(ls -1 dejagnu-*.tar.gz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'dejagnu-*') && \
+    ./configure --prefix=/tools && \
+    make install && \
+    popd && \
+    rm -rf /tmp/dejagnu-*
+
+# 5.14 Check
+RUN set -x && \
+    tar -xf $(ls -1 check-*.tar.gz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'check-*') && \
+    PKG_CONFIG= ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/check-*
+
+# 5.15 Ncurses
+RUN set -x && \
+    tar -xf $(ls -1 ncurses-*.tar.gz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'ncurses-*') && \
+    sed -i s/mawk// configure && \
+    ./configure \
+        --prefix=/tools \
+        --with-shared \
+        --without-debug \
+        --without-ada \
+        --enable-widec \
+        --enable-overwrite && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/ncurses-*
+
+# 5.16 Bash
+RUN set -x && \
+    tar -xf $(ls -1 bash-*.tar.gz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'bash-*') && \
+    ./configure \
+        --prefix=/tools \
+        --without-bash-malloc && \
+    make && \
+    make install && \
+    ln -sfv bash /tools/bin/sh && \
+    popd && \
+    rm -rf /tmp/bash-*
+
+# 5.17 Bison
+RUN set -x && \
+    tar -xf $(ls -1 bison-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'bison-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/bison-*
+
+# 5.18 Bzip2
+RUN set -x && \
+    tar -xf $(ls -1 bzip2-*.tar.gz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'bzip2-*') && \
+    make && \
+    make PREFIX=/tools install && \
+    popd && \
+    rm -rf /tmp/bzip2-*
+
+# 5.19 Coreutils
+RUN set -x && \
+    tar -xf $(ls -1 coreutils-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'coreutils-*') && \
+    ./configure \
+        --prefix=/tools \
+        --enable-install-program=hostname && \
+    make && \
+    make install && \
+    while [[ -e confdir3/confdir3 ]]; do mv confdir3/confdir3 confdir3a; rmdir confdir3; mv confdir3a confdir3; done; rmdir confdir3 && \
+    popd && \
+    rm -rf /tmp/coreutils-*
+
+# 5.20 Diffutils
+RUN set -x && \
+    tar -xf $(ls -1 diffutils-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'diffutils-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/diffutils-*
+
+# 5.21 File
+RUN set -x && \
+    tar -xf $(ls -1 file-*.tar.gz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'file-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/file-*
+
+# 5.22 Findutils
+RUN set -x && \
+    tar -xf $(ls -1 findutils-*.tar.gz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'findutils-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    while [[ -e confdir3/confdir3 ]]; do mv confdir3/confdir3 confdir3a; rmdir confdir3; mv confdir3a confdir3; done; rmdir confdir3 && \
+    popd && \
+    rm -rf /tmp/findutils-*
+
+# 5.23 Gawk
+RUN set -x && \
+    tar -xf $(ls -1 gawk-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'gawk-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/gawk-*
+
+# 5.24 Gettext
+RUN set -x && \
+    tar -xf $(ls -1 gettext-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'gettext-*') && \
+    cd gettext-tools && \
+    EMACS="no" ./configure \
+        --prefix=/tools \
+        --disable-shared && \
+    make -C gnulib-lib && \
+    make -C intl pluralx.c && \
+    make -C src msgfmt && \
+    make -C src msgmerge && \
+    make -C src xgettext && \
+    cp -v src/{msgfmt,msgmerge,xgettext} /tools/bin && \
+    popd && \
+    rm -rf /tmp/gettext-*
+
+# 5.25 Grep
+RUN set -x && \
+    tar -xf $(ls -1 grep-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'grep-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/grep-*
+
+# 5.26 Gzip
+RUN set -x && \
+    tar -xf $(ls -1 gzip-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'gzip-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/gzip-*
+
+# 5.27 M4
+RUN set -x && \
+    tar -xf $(ls -1 m4-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'm4-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/m4-*
+
+# 5.28 Make
+RUN set -x && \
+    tar -xf $(ls -1 make-*.tar.bz2) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'make-*') && \
+    ./configure \
+        --prefix=/tools \
+        --without-guile && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/make-*
+
+# 5.29 Patch
+RUN set -x && \
+    tar -xf $(ls -1 patch-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'patch-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/patch-*
+
+# 5.30 Perl
+RUN set -x && \
+    tar -xf $(ls -1 perl-*.tar.bz2) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'perl-*') && \
+    sh Configure -des -Dprefix=/tools -Dlibs=-lm && \
+    make && \
+    cp -v perl cpan/podlators/scripts/pod2man /tools/bin && \
+    mkdir -pv /tools/lib/perl5/5.24.1 && \
+    cp -Rv lib/* /tools/lib/perl5/5.24.1 && \
+    popd && \
+    rm -rf /tmp/perl-*
+
+# 5.31 Sed
+RUN set -x && \
+    tar -xf $(ls -1 sed-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'sed-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/sed-*
+
+# 5.32 Tar
+RUN set -x && \
+    tar -xf $(ls -1 tar-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'tar-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    while [[ -e confdir3/confdir3 ]]; do mv confdir3/confdir3 confdir3a; rmdir confdir3; mv confdir3a confdir3; done; rmdir confdir3 && \
+    popd && \
+    rm -rf /tmp/tar-*
+
+# 5.33 Texinfo
+RUN set -x && \
+    tar -xf $(ls -1 texinfo-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'texinfo-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/texinfo-*
+
+# 5.34 Util-linux
+RUN set -x && \
+    tar -xf $(ls -1 util-linux-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'util-linux-*') && \
+    ./configure \
+        --prefix=/tools \
+        --without-python \
+        --disable-makeinstall-chown \
+        --without-systemdsystemunitdir \
+        --enable-libmount-force-mountinfo \
+        PKG_CONFIG="" && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/util-linux-*
+
+# 5.35 Xz
+RUN set -x && \
+    tar -xf $(ls -1 xz-*.tar.xz) -C /tmp && \
+    pushd $(find /tmp -maxdepth 1 -type d -iname 'xz-*') && \
+    ./configure --prefix=/tools && \
+    make && \
+    make install && \
+    popd && \
+    rm -rf /tmp/xz-*
+
+# 5.36 - stripping
+RUN set -x && ( \
+        strip --strip-debug /tools/lib/* || true; \
+        /usr/bin/strip --strip-unneeded /tools/{,s}bin/* || true; \
+        rm -rf /tools/{,share}/{info,man,doc}; \
+    )
+
+# 5.37 - changing ownership
 USER root
 RUN set -x && \
     chown -R root:root $LFS/tools
-ENV \
-    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/bin:/root/usr/bin
+
+# set original PATH
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/bin:/root/usr/bin
 
 ### METADATA ###################################################################
 
